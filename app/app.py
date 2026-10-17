@@ -2,6 +2,7 @@ import streamlit as st
 import tensorflow as tf
 from PIL import Image
 import numpy as np
+from pathlib import Path
 
 # Page configuration
 st.set_page_config(
@@ -14,11 +15,17 @@ st.set_page_config(
 CLASS_NAMES = ['glioma', 'meningioma', 'notumor', 'pituitary']
 IMG_SIZE = (224, 224)
 
+# Resolve model path dynamically relative to the app file location
+BASE_DIR = Path(__file__).resolve().parent.parent
+MODEL_PATH = BASE_DIR / "brain_tumor_model.keras"
+
 @st.cache_resource
 def load_model():
-    """Load the trained Keras model."""
-    model = tf.keras.models.load_model("brain_tumor_model.keras")
-    return model
+    """Load the trained Keras model safely from the project root."""
+    if not MODEL_PATH.exists():
+        st.error(f"Model file not found at: `{MODEL_PATH}`\nPlease verify that `brain_tumor_model.keras` is in your project root directory.")
+        st.stop()
+    return tf.keras.models.load_model(MODEL_PATH)
 
 # App Header
 st.title("🧠 Brain MRI Tumor Classification")
